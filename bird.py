@@ -20,7 +20,6 @@ class Bird(pygame.sprite.Sprite):
 		self.direction = pygame.math.Vector2(0, 0)
 		self.score = 0
 
-	# voo animation
 	def _animate(self):
 		sprites = self.bird_img
 		sprite_index = (self.frame_index // self.animation_delay) % len(sprites)
@@ -31,11 +30,9 @@ class Bird(pygame.sprite.Sprite):
 		if self.frame_index // self.animation_delay > len(sprites):
 			self.frame_index = 0
 
-	# fly higher
 	def _jump(self):
 		self.direction.y = self.jump_move
 
-	# updates the bird's overall state
 	def update(self, is_jump):
 		if is_jump:
 			self._jump()
