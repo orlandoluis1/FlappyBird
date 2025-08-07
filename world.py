@@ -20,7 +20,14 @@ class World:
 		self.passed = True
 		self.game = GameIndicator(screen)
 
-	# cria obstaculos
+		self.game_over_img = pygame.image.load('assets/gameover.png').convert_alpha()
+		self.game_over_img = pygame.transform.scale(self.game_over_img, (300, 100))
+		self.game_over_rect = self.game_over_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
+
+		self.inst_font = pygame.font.SysFont('Bauhaus 93', 30)
+		self.inst_color = pygame.Color("black")
+
+
 	def _generate_world(self):
 		self._add_pipe()
 		bird = Bird((WIDTH//2 - pipe_size, HEIGHT//2 - pipe_size), 30)
@@ -42,7 +49,6 @@ class World:
 		else:
 			self.world_shift = 0
 
-	# gravidade
 	def _apply_gravity(self, player):
 		if self.playing or self.game_over:
 			player.direction.y += self.gravity
@@ -60,33 +66,55 @@ class World:
 				bird.score += 1
 				self.passed = True
 
+	def _show_game_over(self):
+		self.screen.blit(self.game_over_img, self.game_over_rect)
+
+		restart_text = "Pressione \"R\" para Reiniciar."
+		restart_surf = self.inst_font.render(restart_text, True, self.inst_color)
+		restart_rect = restart_surf.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
+		self.screen.blit(restart_surf, restart_rect)
+
 	def update(self, player_event = None):
 		
-		if self.current_pipe.rect.centerx  <= (WIDTH // 2) - pipe_size:
-			self._add_pipe()
-		
-		self.pipes.update(self.world_shift)
-		self.pipes.draw(self.screen)
+		if not self.game_over:
+			if self.current_pipe.rect.centerx  <= (WIDTH // 2) - pipe_size:
+				self._add_pipe()
+			
+			self.pipes.update(self.world_shift)
+			self.pipes.draw(self.screen)
 
-		self._apply_gravity(self.player.sprite)
-		self._scroll_x()
-		self._handle_collisions()
+			self._apply_gravity(self.player.sprite)
+			self._scroll_x()
+			self._handle_collisions()
 
-		if player_event == "jump" and not self.game_over:
-			player_event = True
-		elif player_event == "restart":
-			self.game_over = False
-			self.pipes.empty()
-			self.player.empty()
-			self.player.score = 0
-			self._generate_world()
+			if player_event == "jump" and not self.game_over:
+				player_event = True
+			elif player_event == "restart":
+				self.game_over = False
+				self.pipes.empty()
+				self.player.empty()
+				self.player.sprite.score = 0
+				self._generate_world()
+			else:
+				player_event = False
+	
+			if not self.playing:
+				self.game.instructions()
+
+			if self.playing:
+				self.player.update(player_event)
+				self.player.draw(self.screen)
+				self.game.show_score(self.player.sprite.score)
+
 		else:
-			player_event = False
-   
-		if not self.playing:
-			self.game.instructions()
-
-		self.player.update(player_event)
-		self.player.draw(self.screen)
-
-		self.game.show_score(self.player.sprite.score)
+			self.pipes.draw(self.screen)
+			self.player.draw(self.screen)
+			self.game.show_score(self.player.sprite.score)
+			self._show_game_over()
+			if player_event == "restart":
+				self.game_over = False
+				self.playing = False
+				self.pipes.empty()
+				self.player.empty()
+				self._generate_world()
+				self.player.sprite.score = 0

@@ -13,7 +13,13 @@ class Main:
 		self.bg_img = pygame.image.load('assets/terrain/bg.png')
 		self.bg_img = pygame.transform.scale(self.bg_img, (WIDTH, HEIGHT))
 		self.ground_img = pygame.image.load('assets/terrain/ground.png')
-		self.ground_scroll = 0
+		self.ground_img = pygame.transform.scale(self.ground_img, (WIDTH, ground_space))
+
+		self.ground_img_2 = self.ground_img.copy()
+
+		self.ground_scroll_1 = 0
+		self.ground_scroll_2 = WIDTH
+
 		self.scroll_speed = -6
 		self.FPS = pygame.time.Clock()
 		self.stop_ground_scroll = False
@@ -38,11 +44,18 @@ class Main:
 
 			world.update()
 
-			self.screen.blit(self.ground_img, (self.ground_scroll, HEIGHT))
+			self.screen.blit(self.ground_img, (self.ground_scroll_1, HEIGHT))
+			self.screen.blit(self.ground_img_2, (self.ground_scroll_2, HEIGHT))
+
 			if not self.stop_ground_scroll:
-				self.ground_scroll += self.scroll_speed
-				if abs(self.ground_scroll) > 35:
-					self.ground_scroll = 0
+				self.ground_scroll_1 += self.scroll_speed
+				self.ground_scroll_2 += self.scroll_speed
+				
+				if self.ground_scroll_1 <= -WIDTH: 
+					self.ground_scroll_1 = WIDTH
+				
+				if self.ground_scroll_2 <= -WIDTH:
+					self.ground_scroll_2 = WIDTH
 
 			pygame.display.update()
 			self.FPS.tick(60)
